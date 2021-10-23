@@ -11,5 +11,5 @@ powershell script for altering filenames
 
 # How to use
 paste it into powershell and press enter. \
-Or, you can make it into a desktop app. \
+Or, you can make it into a desktop app: \
 See [Microsoft documentation](https://docs.microsoft.com/en-us/answers/questions/318610/convert-powershell-to-exe.html) for info on how to convert .ps1 files to .exe
