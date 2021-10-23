@@ -6,5 +6,5 @@ powershell script for altering filenames
 3. Moves files up one folder if parent dir starts with 2 numbers -Force is used to avoid duplicates.
 4. Repeats (3.) until all files are moved to correct folder.
 5. Renames all files.
-6. Searches for, and deletes empty folder.
+6. Searches for, and deletes empty folders.
 7. Displays status - files moved, filenames altered, folders deleted.
