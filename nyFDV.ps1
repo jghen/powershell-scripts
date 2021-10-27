@@ -1,8 +1,8 @@
 '<------------------------- ENDRE NAVN - NY FDV --------------------------->
 '
 #inputs
-$path = Read-Host ‘Lim inn lokasjonen på NY FDV, F. eks [U:\500000\FDV-dokumentasjon\Skoler\00 Lade skole] ‘
-Set-Location $path
+$oldPath = Read-Host ‘Lim inn lokasjonen på NY FDV, F. eks [U:\500000\FDV-dokumentasjon\Skoler\00 Lade skole] ‘
+Set-Location $oldPath
 $year_built = Read-Host 'Skriv inn byggeår [yyyy]: '
 
 #failsafe 1 - lag en ny 00 fdv mappe - kopier alt dit. set ny path
