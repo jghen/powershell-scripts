@@ -1,5 +1,17 @@
 '<----------------Endre navn på gammel FDV fra u-området----------------->
 '
+#failsafe - alle mapper som starter på 8, 80 eller 08 må starte på 17
+
+foreach ($folder in (Get-ChildItem -Recurse -Directory)) {
+    if (
+        ($folder.Name.substring(0,1) -like '8') -Or 
+        ($folder.Name.substring(0,2) -like '80') -Or 
+        ($folder.Name.substring(0,2) -like '08')
+        ) {
+        $folder | Rename-Item -NewName {'17 - ' + $folder.Name}
+    }
+}
+
 #input - skriv inn mappenavn
 $path = Read-Host ‘Lim inn lokasjonen på gammel FDV, F. eks [U:\500000\FDV-dokumentasjon\Skoler\00 Berg skole] ‘
 Set-Location $path
