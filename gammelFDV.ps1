@@ -1,7 +1,29 @@
 '<----------------Endre navn på gammel FDV fra u-området----------------->
 '
-#failsafe - alle mapper som starter på 8, 80 eller 08 må starte på 17
+#inputs
+$oldPath = Read-Host ‘Lim inn lokasjonen på gammel FDV, F. eks [U:\500000\FDV-dokumentasjon\Skoler\00 Berg skole] ‘
+Set-Location $oldPath
+$year_built = Read-Host 'Skriv inn byggeår [yyyy]: '
+$year_original_files_scanned = Read-Host ‘Når ble originalfilene lagt på u-området? [yyyy]: ‘
 
+#failsafe 1 - lag en ny 00 fdv mappe - kopier alt dit. set ny path
+$newMainFolder = "00 FDV - MED NYE FILNAVN"
+$path = $oldPath + '\' + $newMainFolder
+
+write-output 'CREATING MED FOLDER' $newMainFolder
+write-output 'COPYING EVERYTHING TO NEW PATH' $path
+
+$children = Get-Childitem
+New-Item -Path $oldPath -Name $newMainFolder -ItemType "directory" 
+
+foreach ($item in $children) {
+    $item | Copy-Item -Destination $path -Recurse
+    Write-Output 'COPYING ITEM:  ' $item ' TO NEW FOLDER: ' $newMainFolder 
+}
+
+Set-Location $path
+
+#failsafe 2 - alle mapper som starter på 8, 80 eller 08 må starte på 17
 foreach ($folder in (Get-ChildItem -Recurse -Directory)) {
     if (
         ($folder.Name.substring(0,1) -like '8') -Or 
@@ -11,18 +33,8 @@ foreach ($folder in (Get-ChildItem -Recurse -Directory)) {
         $folder | Rename-Item -NewName {'17 - ' + $folder.Name}
     }
 }
-
-#input - skriv inn mappenavn
-$path = Read-Host ‘Lim inn lokasjonen på gammel FDV, F. eks [U:\500000\FDV-dokumentasjon\Skoler\00 Berg skole] ‘
-Set-Location $path
-#input - byggeår
-$year_built = Read-Host 'Skriv inn byggeår [yyyy]: '
-#input - året originalfilene (scannet) ble lagt inn på u
-$year_original_files_scanned = Read-Host ‘Når ble originalfilene lagt på u-området? [yyyy]: ‘
 '<---------------------------- FILER FLYTTES ----------------------------->
 '
-
-
 $countMovedTot = 0
 $countNotMovedTot = 0
 foreach ($file in (Get-ChildItem -Recurse -File)) {
@@ -91,7 +103,9 @@ foreach ($file in (Get-ChildItem -Recurse -File)) {
 }
 '<-------------------------- TOMME MAPPER SLETTES ------------------------>
 '
-$countRemovedFolders = 0
+$countRemovedFolders = (Get-ChildItem -Directory -Recurse | where-object {$_.GetFileSystemInfos().Count -eq 0} | Measure-Object).Count
+Write-Output 'EMPTY FOLDERS TO REMOVE: ' $countRemovedFolders
+
 $tailRecursion = {
     param(
         $Path
@@ -102,10 +116,8 @@ $tailRecursion = {
     $currentChildren = Get-ChildItem -Force -LiteralPath $Path
     $isEmpty = $currentChildren -eq $null
     if ($isEmpty) {
-        $countRemovedFolders++
         Write-Verbose "Removing empty folder at path '${Path}'." -Verbose
-        Remove-Item -Force -LiteralPath $Path
-        
+        Remove-Item -Force -LiteralPath $Path  
     }
 }
 #call function:
