@@ -1,6 +1,5 @@
 '<------------------------- ENDRE NAVN - NY FDV --------------------------->
 '
-
 #inputs
 $path = Read-Host ‘Lim inn lokasjonen på NY FDV, F. eks [U:\500000\FDV-dokumentasjon\Skoler\00 Lade skole] ‘
 Set-Location $path
