@@ -16,8 +16,8 @@ $children = Get-Childitem
 New-Item -Path $oldPath -Name $newMainFolder -ItemType "directory" 
 
 foreach ($item in $children) {
-    $item | Copy-Item -Destination $path -Recurse
     Write-Output 'COPYING ITEM:  ' $item ' TO NEW FOLDER: ' $newMainFolder 
+    $item | Copy-Item -Destination $path -Recurse
 }
 
 Set-Location $path
