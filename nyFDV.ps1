@@ -32,19 +32,31 @@ foreach ($folder in (Get-ChildItem -Recurse -Directory)) {
         $folder | Rename-Item -NewName {'17 - ' + $folder.Name}
     }
 }
-'<---------------------------- FILER FLYTTES ----------------------------->
+
+'
+<---------------------------- FILER FLYTTES ----------------------------->
 '
 #telle flytting totalt
 $countMovedTot = 0
 $countNotMovedTot = 0
 foreach ($file in (Get-ChildItem -Recurse -File)) {
-    if ($file.Directory.Name.substring(0, 2) -notmatch '^\d+$') {
-        $countMovedTot++
+    $parentDir =$file.Directory.Name.substring(0, 2)
+    if (
+        ($parentDir -match '^\d+$') -And (
+            ($parentDir -eq 17) -Or    
+            ($parentDir -gt 19) -And
+            ($parentDir -lt 80)
+            )
+        ){
+        #stay
+        $countNotMovedTot++
     }
     else {
-        $countNotMovedTot++
-    } 
+        #move
+        $countMovedTot++
+    }
 }
+
 #flytting - filer i mapper som ikke starter med 2 siffer - flyttes opp
 #$i = 0
 while ($true) {
@@ -62,7 +74,6 @@ while ($true) {
                 Write-Host ($filename + ' --- MOVED TO PARENT FOLDER')
                 $countMoved++
                 #$i++
-
             }
             else {
                 $countNotMoved++
@@ -79,7 +90,9 @@ while ($true) {
         break
     }
 }
-'<----------------------------- FILER DØPES OM -------------------------->
+
+'
+<----------------------------- FILER DØPES OM -------------------------->
 '
 $counterRenamed = 0
 $counterNotRenamed = 0
@@ -96,7 +109,9 @@ foreach ($file in (Get-ChildItem -Recurse -File)) {
         $counterNotRenamed++
     }
 }
-'<-------------------------- TOMME MAPPER SLETTES ------------------------>
+
+'
+<-------------------------- TOMME MAPPER SLETTES ------------------------>
 '
 $countRemovedFolders = (Get-ChildItem -Directory -Recurse | where-object {$_.GetFileSystemInfos().Count -eq 0} | Measure-Object).Count
 Write-Output 'EMPTY FOLDERS TO REMOVE: ' $countRemovedFolders
@@ -118,13 +133,11 @@ $tailRecursion = {
 #call function:
 & $tailRecursion -Path $path
 
-'<-------------------------------- STATUS -------------------------------->
+'
+<-------------------------------- STATUS -------------------------------->
 '
 Write-Output 'Files moved: ' $countMovedTot
 Write-Output 'Files not moved: ' $countNotMovedTot
 Write-Output 'Empty folders deleted: ' $countRemovedFolders
 Write-Output 'Total files renamed: ' $counterRenamed
 Write-Output 'Total files not renamed: ' $counterNotRenamed
-
-
-
