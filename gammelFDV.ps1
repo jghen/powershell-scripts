@@ -7,7 +7,7 @@ $year_built = Read-Host 'Skriv inn byggeår [yyyy]: '
 $year_original_files_scanned = Read-Host ‘Når ble originalfilene lagt på u-området? [yyyy]: ‘
 
 #failsafe 1 - lag en ny 00 fdv mappe - kopier alt dit. set ny path
-$newMainFolder = "00 FDV - MED NYE FILNAVN"
+$newMainFolder = "20 FDV - MED NYE FILNAVN"
 $path = $oldPath + '\' + $newMainFolder
 
 write-output 'CREATING NEW MAIN FOLDER' $newMainFolder
