@@ -6,17 +6,17 @@ Set-Location $oldPath
 $year_built = Read-Host 'Skriv inn byggeår [yyyy]: '
 
 #failsafe 1 - lag en ny 00 fdv mappe - kopier alt dit. set ny path
-$newMainFolder = "20 FDV - MED NYE FILNAVN"
+$newMainFolder = "20 FDV - med nye filnavn"
 $path = $oldPath + '\' + $newMainFolder
 
-write-output 'CREATING NEW MAIN FOLDER' $newMainFolder
-write-output 'COPYING EVERYTHING TO NEW PATH' $path
+write-output 'Creating new main folder:' $newMainFolder
+write-output 'Copying everything to new path:' $path
 
 $children = Get-Childitem
 New-Item -Path $oldPath -Name $newMainFolder -ItemType "directory" 
 
 foreach ($item in $children) {
-    Write-Output 'COPYING ITEM:  ' $item ' TO NEW FOLDER: ' $newMainFolder 
+    Write-Output 'Copying:  ' $item ' to new folder: ' $newMainFolder 
     $item | Copy-Item -Destination $path -Recurse
 }
 
@@ -32,7 +32,7 @@ foreach ($folder in (Get-ChildItem -Recurse -Directory)) {
         $folder | Rename-Item -NewName {'17 - ' + $folder.Name}
     }
 }
-
+Write-Output 'Copy complete'
 '
 <---------------------------- FILER FLYTTES ----------------------------->
 '
@@ -64,23 +64,29 @@ while ($true) {
     $countNotMoved = 0
     #$j = $i
     foreach ($file in (Get-ChildItem -Recurse -File)) {
-        $fileName = $file.Name
-        $parentFolder = $file.Directory.Name
+        $parentFolder = $file.Directory.Name.substring(0, 2)
         $destination = $file.Directory.Parent.FullName
         try {
-            if ($parentFolder.substring(0, 2) -notmatch '^\d+$') {
-                #move file to parent folder
-                $file | Move-Item -Destination $destination -Force
-                Write-Host ($filename + ' --- MOVED TO PARENT FOLDER')
-                $countMoved++
-                #$i++
+            if (
+                ($parentFolder -match '^\d+$') -And (
+                    ($parentFolder -eq 17) -Or    
+                    ($parentFolder -gt 19) -And
+                    ($parentFolder -lt 80)
+                    )
+                ){
+                #stay
+                $countNotMoved++
             }
             else {
-                $countNotMoved++
+                #move file to parent folder
+                $file | Move-Item -Destination $destination -Force
+                Write-Host ($file.Name + ' - moved to parent directory')
+                $countMoved++
+                #$i++
             } 
         }
         catch {
-            Write-Host ("FILE: " + $file.Name + " ERROR: " + $_.Exception.message)
+            Write-Host ("--> File: " + $file.Name + " - ERROR: " + $_.Exception.message)
         }
     } 
     Write-Output 'Moved: ' $countMoved
@@ -101,20 +107,20 @@ foreach ($file in (Get-ChildItem -Recurse -File)) {
     $parentFolder = $file.Directory.Name
     try {
         $file | Rename-Item -NewName { $year_built + ”_” + $parentFolder.substring(0, 2) + ” ” + $fileName }
-        Write-Host ("FILE " + $file.Name + " --- RENAMED")
+        Write-Host ("File " + $file.Name + " - renamed")
         $counterRenamed++
     }
     catch {
-        Write-Host ("FILE " + $file.Name + " --- NOT RENAMED: ERROR: " + $_.Exception.message)
+        Write-Host ("File " + $file.Name + " --- NOT RENAMED: ERROR: " + $_.Exception.message)
         $counterNotRenamed++
     }
 }
-
+Write-Output 'Renaming files - completed'
 '
 <-------------------------- TOMME MAPPER SLETTES ------------------------>
 '
 $countRemovedFolders = (Get-ChildItem -Directory -Recurse | where-object {$_.GetFileSystemInfos().Count -eq 0} | Measure-Object).Count
-Write-Output 'EMPTY FOLDERS TO REMOVE: ' $countRemovedFolders
+Write-Output 'Empty folders to remove: ' $countRemovedFolders
 
 $tailRecursion = {
     param(
