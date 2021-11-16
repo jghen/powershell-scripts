@@ -26,11 +26,7 @@ Set-Location $path
 
 #failsafe 2 - alle mapper som starter på 8, 80 eller 08 må starte på 17
 foreach ($folder in (Get-ChildItem -Recurse -Directory)) {
-    if (
-        ($folder.Name.substring(0,1) -like '8') -Or 
-        ($folder.Name.substring(0,2) -like '80') -Or 
-        ($folder.Name.substring(0,2) -like '08')
-        ) {
+    if ($folder.Name.substring(0,2) -eq 80) {
         $folder | Rename-Item -NewName {'17 - ' + $folder.Name}
     }
 }
