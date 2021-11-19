@@ -133,8 +133,9 @@ function removeEmptyFolders {
     $foldersRemoved = 0
     Get-ChildItem $path -Recurse -Directory | ForEach-Object {
         if(!(Get-ChildItem -Path $_.FullName)) {
-            Remove-Item -Force -Recurse -LiteralPath $_.FullName -Verbose
-            $foldersRemoved++ #also deletes desktop.ini at same time
+            Remove-Item -Force -Recurse -LiteralPath $_.FullName <# -Verbose #>
+            Write-Host ("Folder removed: " + $_.Name)
+            $foldersRemoved++
         }
     }
     return $foldersRemoved
