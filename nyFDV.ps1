@@ -9,7 +9,7 @@ $year_built = Read-Host 'Skriv inn byggeår [yyyy]: '
 <------------------------- KOPIERER TIL NY MAPPE ------------------------->
 '
 #failsafe 1 - lag en ny 00 fdv mappe - kopier alt dit. set ny path
-$newMainFolder = "20 FDV - med nye filnavn"
+$newMainFolder = "00 FDV - med nye filnavn"
 $path = $oldPath + '\' + $newMainFolder
 
 write-output 'Creating new main folder:' $newMainFolder
@@ -46,18 +46,34 @@ Write-Output 'Unzip complete'
 '
 <---------------------------- FILER FLYTTES ----------------------------->
 '
-#telle flytting totalt
+function ShallFileStayInFolder {
+    param (
+        $File
+    )
+    $parentDir = $File.Directory.Name.substring(0, 2)
+    $parentDirName = $File.Directory.Name
+
+    $thirdCharIsSpace = $File.Directory.Name.substring(2, 1) -eq " " 
+    $ParentDirMatchNewMainDir = $parentDirName -eq $newMainFolder
+    $ParentDirIsNumber = $parentDir -match '^\d+$'
+    $ParentDirMatchFdvDirs = ($parentDir -eq 17) -Or ($parentDir -gt 19) -And ($parentDir -lt 80)
+    
+    if (($ParentDirIsNumber -And $ParentDirMatchFdvDirs -And $thirdCharIsSpace) -Or $ParentDirMatchNewMainDir){
+        #stay
+        return $true
+    }
+    else {
+        #move
+        return $false
+    }
+}
+
+#count total files to move
 $countMovedTot = 0
 $countNotMovedTot = 0
 foreach ($file in (Get-ChildItem -Recurse -File)) {
-    $parentDir =$file.Directory.Name.substring(0, 2)
-    if (
-        ($parentDir -match '^\d+$') -And (
-            ($parentDir -eq 17) -Or    
-            ($parentDir -gt 19) -And
-            ($parentDir -lt 80)
-            )
-        ){
+    
+    if (ShallFileStayInFolder $file){
         #stay
         $countNotMovedTot++
     }
@@ -67,32 +83,24 @@ foreach ($file in (Get-ChildItem -Recurse -File)) {
     }
 }
 
-#flytting - filer i mapper som ikke starter med 2 siffer - flyttes opp
-#$i = 0
+#moving files:
 while ($true) {
     $countMoved = 0
     $countNotMoved = 0
-    #$j = $i
+    
     foreach ($file in (Get-ChildItem -Recurse -File)) {
-        $parentFolder = $file.Directory.Name.substring(0, 2)
         $destination = $file.Directory.Parent.FullName
         try {
-            if (
-                ($parentFolder -match '^\d+$') -And (
-                    ($parentFolder -eq 17) -Or    
-                    ($parentFolder -gt 19) -And
-                    ($parentFolder -lt 80)
-                    )
-                ){
+            if (ShallFileStayInFolder $file){
                 #stay
                 $countNotMoved++
             }
             else {
                 #move file to parent folder
                 $file | Move-Item -Destination $destination -Force
-                Write-Host ($file.Name + ' - moved to parent directory')
+                Write-Host ('File moved: ' + $file.Name)
+                Write-Host ('Moved to: ' + $destination)
                 $countMoved++
-                #$i++
             } 
         }
         catch {
@@ -101,7 +109,7 @@ while ($true) {
     } 
     Write-Output 'Moved: ' $countMoved
     Write-Output 'Not moved: ' $countNotMoved
-    if ($countMoved -eq 0 <# -or $j -eq $i #>) {
+    if ($countMoved -eq 0) {
         'Relocation process complete'
         break
     }
@@ -117,15 +125,16 @@ foreach ($file in (Get-ChildItem -Recurse -File)) {
     $parentFolder = $file.Directory.Name
     try {
         $file | Rename-Item -NewName { $year_built + ”_” + $parentFolder.substring(0, 2) + ” ” + $fileName }
-        Write-Host ("File " + $file.Name + " - renamed")
+        Write-Host ("File renamed: " + $file.Name)
         $counterRenamed++
     }
     catch {
-        Write-Host ("File " + $file.Name + " --- NOT RENAMED: ERROR: " + $_.Exception.message)
+        Write-Host ("File not renamed: " + $file.Name + " --- ERROR: " + $_.Exception.message)
         $counterNotRenamed++
     }
 }
 Write-Output 'Renaming files - completed'
+
 '
 <-------------------------- TOMME MAPPER SLETTES ------------------------>
 '
@@ -133,14 +142,14 @@ function removeEmptyFolders {
     $foldersRemoved = 0
     Get-ChildItem $path -Recurse -Directory | ForEach-Object {
         if(!(Get-ChildItem -Path $_.FullName)) {
-            Remove-Item -Force -Recurse -LiteralPath $_.FullName <# -Verbose #>
+            Remove-Item -Force -Recurse -LiteralPath $_.FullName
             Write-Host ("Folder removed: " + $_.Name)
             $foldersRemoved++
         }
     }
     return $foldersRemoved
 }
-#call 2 times to remove top folder layer
+
 $iteration1 = removeEmptyFolders 
 $iteration2 = removeEmptyFolders 
 $countRemovedFolders = $iteration1 + $iteration2
