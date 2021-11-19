@@ -5,6 +5,9 @@ $oldPath = Read-Host ‘Lim inn lokasjonen på NY FDV, F. eks [U:\500000\FDV-dok
 Set-Location $oldPath
 $year_built = Read-Host 'Skriv inn byggeår [yyyy]: '
 
+'
+<------------------------- KOPIERER TIL NY MAPPE ------------------------->
+'
 #failsafe 1 - lag en ny 00 fdv mappe - kopier alt dit. set ny path
 $newMainFolder = "20 FDV - med nye filnavn"
 $path = $oldPath + '\' + $newMainFolder
@@ -29,6 +32,17 @@ foreach ($folder in (Get-ChildItem -Recurse -Directory)) {
     }
 }
 Write-Output 'Copy complete'
+
+'
+<----------------------------- ZIP-FILER PAKKES UT -------------------------->
+'
+foreach ($zipFile in (Get-ChildItem -Filter *.zip -Recurse)) {
+    $destination = $zipfile.Directory.fullName
+    Write-Host ("Unzipping file: " + $zipFile.Name)
+    Expand-Archive -Path $zipFile.fullName -DestinationPath $destination
+}
+Write-Output 'Unzip complete'
+
 '
 <---------------------------- FILER FLYTTES ----------------------------->
 '
@@ -115,31 +129,26 @@ Write-Output 'Renaming files - completed'
 '
 <-------------------------- TOMME MAPPER SLETTES ------------------------>
 '
-$countRemovedFolders = (Get-ChildItem -Directory -Recurse | where-object {$_.GetFileSystemInfos().Count -eq 0} | Measure-Object).Count
-Write-Output 'Empty folders to remove: ' $countRemovedFolders
-
-$tailRecursion = {
-    param(
-        $Path
-    )
-    foreach ($childDirectory in Get-ChildItem -Force -LiteralPath $Path -Directory) {
-        & $tailRecursion -Path $childDirectory.FullName
+function removeEmptyFolders {
+    $foldersRemoved = 0
+    Get-ChildItem $path -Recurse -Directory | ForEach-Object {
+        if(!(Get-ChildItem -Path $_.FullName)) {
+            Remove-Item -Force -Recurse -LiteralPath $_.FullName -Verbose
+            $foldersRemoved++ #also deletes desktop.ini at same time
+        }
     }
-    $currentChildren = Get-ChildItem -Force -LiteralPath $Path
-    $isEmpty = $currentChildren -eq $null
-    if ($isEmpty) {
-        Write-Verbose "Removing empty folder at path '${Path}'." -Verbose
-        Remove-Item -Force -LiteralPath $Path
-    }
+    return $foldersRemoved
 }
-#call function:
-& $tailRecursion -Path $path
+#call 2 times to remove top folder layer
+$iteration1 = removeEmptyFolders 
+$iteration2 = removeEmptyFolders 
+$countRemovedFolders = $iteration1 + $iteration2
 
 '
 <-------------------------------- STATUS -------------------------------->
 '
 Write-Output 'Files moved: ' $countMovedTot
 Write-Output 'Files not moved: ' $countNotMovedTot
-Write-Output 'Empty folders deleted: ' $countRemovedFolders
+Write-Output 'Empty folders deleted: ' $countRemovedFolders 
 Write-Output 'Total files renamed: ' $counterRenamed
 Write-Output 'Total files not renamed: ' $counterNotRenamed
