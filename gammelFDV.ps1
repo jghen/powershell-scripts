@@ -9,7 +9,7 @@ $year_original_files_scanned = Read-Host ‘Når ble originalfilene lagt på u-o
 '
 <------------------------- KOPIERER TIL NY MAPPE ------------------------->
 '
-#failsafe 1 - lag en ny 00 fdv mappe - kopier alt dit. set ny path
+#failsafe 1 - lag en ny mappe og kopier alt dit. set ny path
 $newMainFolder = "00 FDV - med nye filnavn"
 $path = $oldPath + '\' + $newMainFolder
 
@@ -26,7 +26,7 @@ foreach ($item in $children) {
 
 Set-Location $path
 
-#failsafe 2 - alle mapper som starter på 8, 80 eller 08 må starte på 17
+#failsafe 2 - alle mapper som starter på 80 må starte på 17
 foreach ($folder in (Get-ChildItem -Recurse -Directory)) {
     if ($folder.Name.substring(0,2) -eq 80) {
         $folder | Rename-Item -NewName {'17 - ' + $folder.Name}
@@ -55,11 +55,11 @@ function ShallFileStayInFolder {
     $parentDirName = $File.Directory.Name
 
     $thirdCharIsSpace = $File.Directory.Name.substring(2, 1) -eq " " 
-    $ParentDirMatchNewMainDir = $parentDirName -eq $newMainFolder
-    $ParentDirIsNumber = $parentDir -match '^\d+$'
-    $ParentDirMatchFdvDirs = ($parentDir -eq 17) -Or ($parentDir -gt 19) -And ($parentDir -lt 80)
+    $parentDirMatchNewMainDir = $parentDirName -eq $newMainFolder
+    $parentDirIsNumber = $parentDir -match '^\d+$'
+    $parentDirMatchFdvDirs = ($parentDir -eq 17) -Or ($parentDir -gt 19) -And ($parentDir -lt 80)
     
-    if (($ParentDirIsNumber -And $ParentDirMatchFdvDirs -And $thirdCharIsSpace) -Or $ParentDirMatchNewMainDir){
+    if (($parentDirIsNumber -And $parentDirMatchFdvDirs -And $thirdCharIsSpace) -Or $parentDirMatchNewMainDir){
         #stay
         return $true
     }
