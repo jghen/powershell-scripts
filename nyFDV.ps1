@@ -39,7 +39,7 @@ Write-Output 'Copy complete'
 foreach ($zipFile in (Get-ChildItem -Filter *.zip -Recurse)) {
     $destination = $zipfile.Directory.fullName
     Write-Host ("Unzipping file: " + $zipFile.Name)
-    Expand-Archive -Path $zipFile.fullName -DestinationPath $destination
+    Expand-Archive -Path $zipFile.fullName -DestinationPath $destination -Force
 }
 Write-Output 'Unzip complete'
 
@@ -149,10 +149,11 @@ function removeEmptyFolders {
     }
     return $foldersRemoved
 }
-#call 2 times to remove top folder layer
+#call 3 times to make sure top folder layer removed
 $iteration1 = removeEmptyFolders 
-$iteration2 = removeEmptyFolders 
-$countRemovedFolders = $iteration1 + $iteration2
+$iteration2 = removeEmptyFolders
+$iteration3 = removeEmptyFolders
+$countRemovedFolders = $iteration1 + $iteration2 + $iteration3
 
 '
 <-------------------------------- STATUS -------------------------------->
