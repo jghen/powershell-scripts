@@ -13,7 +13,7 @@ $newMainFolder = "00 FDV - med nye filnavn"
 $path = $oldPath + '\' + $newMainFolder
 
 #Delete if new main folder already exists:
-foreach ($child in $children) {
+foreach ($child in Get-ChildItem) {
     if ($child.Name -eq $newMainFolder) {
         $child | Remove-Item -Force -Recurse
     }
@@ -196,8 +196,21 @@ $counterNotRenamed = 0
 foreach ($file in (Get-ChildItem -Recurse -File)) {
     $fileName = $file.Name
     $parentFolder = $file.Directory.Name
+
+    #conditions
+    $is2DigitFolder = match2DigitFdvDir $parentFolder
+    $is3DigitFolder = match3DigitFdvDir $parentFolder
+
     try {
-        $file | Rename-Item -NewName { $year_built + ”_” + $parentFolder.substring(0, 2) + ” ” + $fileName }
+        if ($is2DigitFolder) {
+            $file | Rename-Item -NewName { $year_built + ”_” + $parentFolder.substring(0, 2) + ” ” + $fileName }
+        }
+        elseif ($is3DigitFolder) {
+            $file | Rename-Item -NewName { $year_built + ”_” + $parentFolder.substring(0, 3) + ” ” + $fileName }
+        }
+        else {
+            $file | Rename-Item -NewName { $fileDate + “_” + $parentFolder.substring(0, 2) + ” ” + $fileName } 
+        }
         Write-Host ("File renamed: " + $file.Name)
         $counterRenamed++
     }
