@@ -1,10 +1,10 @@
 '<----------------Endre navn på gammel FDV fra u-området----------------->
 '
 #inputs
-$oldPath = Read-Host ‘Lim inn lokasjonen på gammel FDV, F. eks [U:\500000\FDV-dokumentasjon\Skoler\00 Berg skole] ‘
+$oldPath = Read-Host 'Lim inn lokasjonen på gammel FDV, F. eks [U:\500000\FDV-dokumentasjon\Skoler\00 Berg skole] '
 Set-Location $oldPath
 $year_built = Read-Host 'Skriv inn byggeår [yyyy]: '
-$year_original_files_scanned = Read-Host ‘Når ble originalfilene lagt på u-området? [yyyy]: ‘
+$year_original_files_scanned = Read-Host 'Når ble originalfilene lagt på u-området? [yyyy]: '
 
 '
 <------------------------- KOPIERER TIL NY MAPPE ------------------------->
@@ -13,15 +13,26 @@ $year_original_files_scanned = Read-Host ‘Når ble originalfilene lagt på u-o
 $newMainFolder = "00 FDV - med nye filnavn"
 $path = $oldPath + '\' + $newMainFolder
 
-write-output 'Creating new main folder:' $newMainFolder
-write-output 'Copying everything to new path:' $path
+#Delete if new main folder already exists:
+foreach ($child in $children) {
+    if ($child.Name -eq $newMainFolder) {
+        $child | Remove-Item -Force -Recurse
+    }
+}
 
 $children = Get-Childitem
-New-Item -Path $oldPath -Name $newMainFolder -ItemType "directory" 
+
+write-Host ('Creating new main folder:' + $newMainFolder)
+write-Host ('Copying everything to new path:' + $path)
+
+#create new main folder
+New-Item -Path $oldPath -Name $newMainFolder -ItemType "directory"
 
 foreach ($item in $children) {
-    Write-Output 'Copying item:  ' $item ' to new folder: ' $newMainFolder 
-    $item | Copy-Item -Destination $path -Recurse
+    if ($item.Name -ne $newMainFolder) {
+        Write-Host ('Copying:  ' + $item + ' to new folder: ' + $newMainFolder)
+        $item | Copy-Item -Destination $path -Recurse
+    } 
 }
 
 Set-Location $path
@@ -32,7 +43,7 @@ foreach ($folder in (Get-ChildItem -Recurse -Directory)) {
         $folder | Rename-Item -NewName {'17 - ' + $folder.Name}
     }
 }
-Write-Output 'Copy complete'
+Write-Host ('Copy complete')
 
 '
 <----------------------------- ZIP-FILER PAKKES UT -------------------------->
@@ -47,24 +58,86 @@ Write-Host ('Unzip complete')
 '
 <---------------------------- FILER FLYTTES ----------------------------->
 '
+function parentDirMatchNewMainDir {
+    param (
+        $ParentDirName
+    )
+    if ($ParentDirName -eq $newMainFolder) {
+        return $true
+    }else {
+        return $false
+    }
+}
+function charIsSpace {
+    param (
+        $char
+    )
+    if ($char -eq " ") {
+        return $true
+    }else {
+        return $false
+    }
+}
+function stringIsOnlyNumbers {
+    param (
+        $String
+    )
+    if ($String -match '^\d+$') {
+        return $true
+    }else {
+        return $false
+    } 
+}
+function match2DigitFdvDir{
+    param (
+        $ParentDir
+    )
+    $parentDir2Digits = $ParentDir.substring(0, 2)
+
+    $thirdCharIsSpace = charIsSpace $ParentDir.substring(2, 1)
+    $first2DigitsAreNumbers = stringIsOnlyNumbers $parentDir2Digits
+    $matchFdvFolder2Digits = ($parentDir2Digits -eq 17) -Or (($parentDir2Digits -gt 19) -And ($parentDir2Digits -lt 80))
+
+    if ($first2DigitsAreNumbers -And $thirdCharIsSpace -And $matchFdvFolder2Digits) {
+        return $true
+    }else {
+        return $false
+    }
+}
+function match3DigitFdvDir{
+    param (
+        $ParentDir
+    )
+    $parentDir3Digits = $ParentDir.substring(0, 3)
+
+    $fourthCharIsSpace = charIsSpace $ParentDir.substring(3, 1)
+    $first3DigitsAreNumbers = stringIsOnlyNumbers $parentDir3Digits
+    $matchFdvFolder3Digits = ($parentDir3Digits -gt 210) -And ($parentDir3Digits -lt 790)
+
+    if ($first3DigitsAreNumbers -And $fourthCharIsSpace -And $matchFdvFolder3Digits) {
+        return $true
+    }else {
+        return $false
+    } 
+}
 function ShallFileStayInFolder {
     param (
         $File
     )
-    $parentDir = $File.Directory.Name.substring(0, 2)
-    $parentDirName = $File.Directory.Name
+    $parentDir = $File.Directory.Name
 
-    $thirdCharIsSpace = $File.Directory.Name.substring(2, 1) -eq " " 
-    $parentDirMatchNewMainDir = $parentDirName -eq $newMainFolder
-    $parentDirIsNumber = $parentDir -match '^\d+$'
-    $parentDirMatchFdvDirs = ($parentDir -eq 17) -Or ($parentDir -gt 19) -And ($parentDir -lt 80)
-    
-    if (($parentDirIsNumber -And $parentDirMatchFdvDirs -And $thirdCharIsSpace) -Or $parentDirMatchNewMainDir){
-        #stay
+    if (parentDirMatchNewMainDir $parentDir){
+        #file stay
+        return $true
+    } elseif (match2DigitFdvDir $parentDir) {
+        #file stay
+        return $true
+    } elseif (match3DigitFdvDir $parentDir) {
+        #file stay
         return $true
     }
     else {
-        #move
+        #file move
         return $false
     }
 }
@@ -125,9 +198,24 @@ foreach ($file in (Get-ChildItem -Recurse -File)) {
     $fileDate = $file.LastWriteTime.ToString("yyyy")
     $fileName = $file.Name
     $parentFolder = $file.Directory.Name
+
+    #conditions
+    $is2DigitFolder = match2DigitFdvDir $parentFolder
+    $is3DigitFolder = match3DigitFdvDir $parentFolder
+    $matchOriginalScanDate = $year_original_files_scanned -eq $fileDate
+
     try {
-        if ($year_original_files_scanned -eq $fileDate) {
-            $file | Rename-Item -NewName { $year_built + ”_” + $parentFolder.substring(0, 2) + ” ” + $fileName }
+        if ($matchOriginalScanDate -And $is2DigitFolder) {
+            $file | Rename-Item -NewName {$year_built + ”_” + $parentFolder.substring(0, 2) + ” ” + $fileName }
+        }
+        elseif ($matchOriginalScanDate -And $is3DigitFolder) {
+            $file | Rename-Item -NewName {$year_built + ”_” + $parentFolder.substring(0, 3) + ” ” + $fileName }
+        }
+        elseif ($is2DigitFolder) {
+            $file | Rename-Item -NewName { $fileDate + “_” + $parentFolder.substring(0, 2) + ” ” + $fileName }
+        }
+        elseif ($is3DigitFolder) {
+            $file | Rename-Item -NewName { $fileDate + “_” + $parentFolder.substring(0, 3) + ” ” + $fileName }
         }
         else {
             $file | Rename-Item -NewName { $fileDate + “_” + $parentFolder.substring(0, 2) + ” ” + $fileName }
@@ -145,27 +233,27 @@ Write-Host ('Renaming files - completed')
 '
 <-------------------------- TOMME MAPPER SLETTES ------------------------>
 '
-$totalReturn = 0
+$totalRemoved = 0
 function removeEmptyFolders {
     param (
-        $totalReturn
+        $totalRemoved
     )
-    $foldersRemoved = 0
+    $localRemoved = 0
     Get-ChildItem $path -Recurse -Directory | ForEach-Object {
         if(!(Get-ChildItem -Path $_.FullName)) {
-            $foldersRemoved++
-            Write-Host ("Folder removed: " + $_.Name)
+            $localRemoved++
+            Write-Host("Folder removed: " + $_.Name)
             Remove-Item -Force -Recurse -LiteralPath $_.FullName
         }
     }
-    $totalReturn += $foldersRemoved
-    if ($foldersRemoved -eq 0) {
+    $totalRemoved += $localRemoved
+    if ($localRemoved -eq 0) {
         Write-Host ("Folder removal - complete")
-        return $totalReturn
+        return $totalRemoved
     } else {
-        Write-Host ("Removed: " + $foldersRemoved)
-        Write-Host ("Total removed: " + $totalReturn)
-        removeEmptyFolders $totalReturn  
+        Write-Host ("Removed: " + $localRemoved)
+        Write-Host ("Total removed: " + $totalRemoved)
+        removeEmptyFolders $totalRemoved
     }
 }
 
