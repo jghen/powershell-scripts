@@ -13,7 +13,7 @@ $newMainFolder = "00 FDV - med nye filnavn"
 $path = $oldPath + '\' + $newMainFolder
 
 #Delete if new main folder already exists:
-foreach ($child in Get-ChildItem) {
+foreach ($child in Get-Childitem) {
     if ($child.Name -eq $newMainFolder) {
         $child | Remove-Item -Force -Recurse
     }
