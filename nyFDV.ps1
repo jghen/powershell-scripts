@@ -19,7 +19,7 @@ foreach ($child in Get-ChildItem) {
     }
 }
 
-$children = Get-Childitem
+$children = Get-Childitem -Exclude ('10 Originaldokumentasjon', '11 Revisjoner')
 
 write-Host ('Creating new main folder:' + $newMainFolder)
 write-Host ('Copying everything to new path:' + $path)
