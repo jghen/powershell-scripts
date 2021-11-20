@@ -266,3 +266,4 @@ Write-Host ('Files not moved: ' + $countNotMovedTot)
 Write-Host ('Empty folders deleted: ' + $countRemovedFolders)
 Write-Host ('Total files renamed: ' + $counterRenamed)
 Write-Host ('Total files not renamed: ' + $counterNotRenamed)
+Get-ChildItem -Path $path
