@@ -42,7 +42,7 @@ foreach ($zipFile in (Get-ChildItem -Filter *.zip -Recurse)) {
     Write-Host ("Unzipping file: " + $zipFile.Name)
     Expand-Archive -Path $zipFile.fullName -DestinationPath $destination -Force
 }
-Write-Output 'Unzip complete'
+Write-Host ('Unzip complete')
 
 '
 <---------------------------- FILER FLYTTES ----------------------------->
@@ -108,10 +108,10 @@ while ($true) {
             Write-Host ("--> File: " + $file.Name + " - ERROR: " + $_.Exception.message)
         }
     } 
-    Write-Output 'Moved: ' $countMoved
-    Write-Output 'Not moved: ' $countNotMoved
+    Write-Host ('Moved: ' + $countMoved)
+    Write-Host ('Not moved: ' + $countNotMoved)
     if ($countMoved -eq 0) {
-        'Relocation process complete'
+        Write-Host ('Relocation process complete')
         break
     }
 }
@@ -140,33 +140,42 @@ foreach ($file in (Get-ChildItem -Recurse -File)) {
         $counterNotRenamed++
     }
 }
-Write-Output 'Renaming files - completed'
+Write-Host ('Renaming files - completed')
 
 '
 <-------------------------- TOMME MAPPER SLETTES ------------------------>
 '
+$totalReturn = 0
 function removeEmptyFolders {
+    param (
+        $totalReturn
+    )
     $foldersRemoved = 0
     Get-ChildItem $path -Recurse -Directory | ForEach-Object {
         if(!(Get-ChildItem -Path $_.FullName)) {
-            Remove-Item -Force -Recurse -LiteralPath $_.FullName
-            Write-Host ("Folder removed: " + $_.Name)
             $foldersRemoved++
+            Write-Host ("Folder removed: " + $_.Name)
+            Remove-Item -Force -Recurse -LiteralPath $_.FullName
         }
     }
-    return $foldersRemoved
+    $totalReturn += $foldersRemoved
+    if ($foldersRemoved -eq 0) {
+        Write-Host ("Folder removal - complete")
+        return $totalReturn
+    } else {
+        Write-Host ("Removed: " + $foldersRemoved)
+        Write-Host ("Total removed: " + $totalReturn)
+        removeEmptyFolders $totalReturn  
+    }
 }
-#call 2 times to remove top folder layer
-$iteration1 = removeEmptyFolders 
-$iteration2 = removeEmptyFolders
-$iteration3 = removeEmptyFolders
-$countRemovedFolders = $iteration1 + $iteration2 +$iteration3
+
+$countRemovedFolders = removeEmptyFolders
 
 '
 <-------------------------------- STATUS -------------------------------->
 '
-Write-Output 'Files moved: ' $countMovedTot
-Write-Output 'Files not moved: ' $countNotMovedTot
-Write-Output 'Empty folders deleted: ' $countRemovedFolders
-Write-Output 'Total files renamed: ' $counterRenamed
-Write-Output 'Total files not renamed: ' $counterNotRenamed
+Write-Host ('Files moved: ' + $countMovedTot)
+Write-Host ('Files not moved: ' + $countNotMovedTot)
+Write-Host ('Empty folders deleted: ' + $countRemovedFolders)
+Write-Host ('Total files renamed: ' + $counterRenamed)
+Write-Host ('Total files not renamed: ' + $counterNotRenamed)
