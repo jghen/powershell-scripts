@@ -9,7 +9,7 @@ $year_built = Read-Host 'Skriv inn byggeår [yyyy]: '
 <------------------------- KOPIERER TIL NY MAPPE ------------------------->
 '
 #failsafe 1 - lag en ny mappe og kopier alt dit. set ny path
-$newMainFolder = "00 FDV - med nye filnavn"
+$newMainFolder = "00 FDV - for innlegging i Main Manager"
 $path = $oldPath + '\' + $newMainFolder
 
 #Delete if new main folder already exists:
