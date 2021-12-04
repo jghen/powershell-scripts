@@ -10,7 +10,7 @@ $year_original_files_scanned = Read-Host 'Når ble originalfilene lagt på u-omr
 <------------------------- KOPIERER TIL NY MAPPE ------------------------->
 '
 #failsafe 1 - lag en ny mappe og kopier alt dit. set ny path
-$newMainFolder = "00 FDV - for innlegging i Main Manager"
+$newMainFolder = "00 FDV MainManager"
 $path = $oldPath + '\' + $newMainFolder
 
 #Delete if new main folder already exists:
