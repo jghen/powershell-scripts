@@ -15,6 +15,7 @@ $path = $oldPath + '\' + $newMainFolder
 #Delete if new main folder already exists:
 foreach ($child in Get-Childitem) {
     if ($child.Name -eq $newMainFolder) {
+        write-Host ($newMainFolder + ' finnes fra før. Den slettes og lages på nytt... ')
         $child | Remove-Item -Force -Recurse
     }
 }
