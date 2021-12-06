@@ -4,8 +4,7 @@ Revisjon: 04
 Dato: 05.12.2021
  
 Nytt i denne versjonen:
-1. Korrigert for lange stier
-2. Fikset feil som oppstod med mappenavn < 2 tegn
+1. Reparert problem med omdøping av mappen 80 brannsikkerhet
  
 <----------------------------------------------------------------------->
 '
@@ -56,8 +55,8 @@ Set-Location $longPath
  
 #failsafe 3 - alle mapper som starter på 80 må starte på 17
 foreach ($folder in (Get-ChildItem -Recurse -Directory)) {
-    if ( ($folder.Name.Length -gt 1) -And ($folder.Name.substring(0,2) -eq 80) ) {
-        $folder | Rename-Item -NewName {'17 -' + $folder.Name}
+    if ( ($folder.Name.Length -gt 2) -And ($folder.Name.substring(0,3) -eq '80 ') ) {
+        $folder | Rename-Item -NewName "17 Branndokumentasjon"
     }
 }
  
