@@ -228,7 +228,7 @@ foreach ($file in (Get-ChildItem -Recurse -File)) {
             $file | Rename-Item -NewName { $year_built + ”_” + $parentFolder.substring(0, 3) + ” ” + $fileName }
         }
         else {
-            $file | Rename-Item -NewName { $fileDate + “_” + $parentFolder.substring(0, 2) + ” ” + $fileName }
+            $file | Rename-Item -NewName { $year_built + “_” + $parentFolder.substring(0, 2) + ” ” + $fileName }
         }
         Write-Host ("File renamed: " + $file.Name)
         $counterRenamed++
