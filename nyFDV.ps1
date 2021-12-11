@@ -5,6 +5,7 @@ Dato: 11.12.2021
  
 Nytt i denne versjonen:
 1. Laget liste over filer som lå feil plass
+2. Disse filene får ikke nytt navn
  
 <----------------------------------------------------------------------->
 '
