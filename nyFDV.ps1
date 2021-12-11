@@ -1,10 +1,10 @@
 '<------------------------Endre navn på ny FDV-------------------------->
  
-Revisjon: 04
-Dato: 05.12.2021
+Revisjon: 04.3
+Dato: 11.12.2021
  
 Nytt i denne versjonen:
-1. Reparert problem med omdøping av mappen 80 brannsikkerhet
+1. Laget liste over filer som lå feil plass
  
 <----------------------------------------------------------------------->
 '
@@ -227,9 +227,9 @@ foreach ($file in (Get-ChildItem -Recurse -File)) {
         elseif ($is3DigitFolder) {
             $file | Rename-Item -NewName { $year_built + ”_” + $parentFolder.substring(0, 3) + ” ” + $fileName }
         }
-        else {
+        <# else {
             $file | Rename-Item -NewName { $year_built + “_” + $parentFolder.substring(0, 2) + ” ” + $fileName }
-        }
+        } #>
         Write-Host ("File renamed: " + $file.Name)
         $counterRenamed++
     }
@@ -268,12 +268,25 @@ function removeEmptyFolders {
     }
 }
 $countRemovedFolders = removeEmptyFolders
+
 '
 <-------------------------------- STATUS -------------------------------->
 '
-Write-Host ('Files moved: ' + $countMovedTot)
-Write-Host ('Files not moved: ' + $countNotMovedTot)
-Write-Host ('Empty folders deleted: ' + $countRemovedFolders)
-Write-Host ('Total files renamed: ' + $counterRenamed)
-Write-Host ('Total files not renamed: ' + $counterNotRenamed)
-Get-ChildItem -Path $path
+Write-Host ('Filer flyttet: ' + $countMovedTot)
+Write-Host ('Filer ikke flyttet: ' + $countNotMovedTot)
+Write-Host ('Tomme mapper slettet: ' + $countRemovedFolders)
+Write-Host ('Filer omdøpt: ' + $counterRenamed)
+Write-Host ('Filer ikke omdøpt: ' + $counterNotRenamed)
+
+""
+$rapport = Get-ChildItem -Path $path | Where-Object {!$_.PSIsContainer}
+$filesInTheWrongPlace = $rapport.count
+Write-Host $filesInTheWrongPlace " filer lå utenfor 2- og 3-siffer FDV-mappe:"
+""
+$fileNumber = 0
+foreach ($file in $rapport) {
+    $fileNumber++
+    write-host $fileNumber ' ' $file
+}
+'
+<------------------------------------------------------------------------>'
