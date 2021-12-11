@@ -1,11 +1,10 @@
 '<----------------Endre navn på gammel FDV fra u-området----------------->
  
- 
-Revisjon: 04
-Dato: 06.12.2021
+Revisjon: 04.3
+Dato: 11.12.2021
  
 Nytt i denne versjonen:
-1. Reparert problem med omdøping av mappen 80 Brannsikkerhet
+1. Laget liste over filer som lå feil plass
  
 <----------------------------------------------------------------------->
 '
@@ -236,9 +235,9 @@ foreach ($file in (Get-ChildItem -Recurse -File)) {
         elseif ($is3DigitFolder) {
             $file | Rename-Item -NewName { $fileDate + “_” + $parentFolder.substring(0, 3) + ” ” + $fileName }
         }
-        else {
+        <# else {
             $file | Rename-Item -NewName { $fileDate + “_” + $parentFolder.substring(0, 2) + ” ” + $fileName }
-        }
+        } #>
         Write-Host ("File renamed: " + $file.Name)
         $counterRenamed++
     }
@@ -286,4 +285,16 @@ Write-Host ('Files not moved: ' + $countNotMovedTot)
 Write-Host ('Empty folders deleted: ' + $countRemovedFolders)
 Write-Host ('Total files renamed: ' + $counterRenamed)
 Write-Host ('Total files not renamed: ' + $counterNotRenamed)
-Get-ChildItem -Path $path
+
+""
+$rapport = Get-ChildItem -Path $path | Where-Object {!$_.PSIsContainer}
+$filesInTheWrongPlace = $rapport.count
+Write-Host $filesInTheWrongPlace " filer lå utenfor 2- og 3-siffer FDV-mappe:"
+""
+$fileNumber = 0
+foreach ($file in $rapport) {
+    $fileNumber++
+    write-host $fileNumber ' ' $file
+}
+'
+<------------------------------------------------------------------------>'
