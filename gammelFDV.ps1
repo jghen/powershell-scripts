@@ -1,11 +1,11 @@
 '<----------------Endre navn på gammel FDV fra u-området----------------->
  
-Revisjon: 04.3
-Dato: 11.12.2021
+Versjon: 4.04
+Dato: 16.12.2021
  
 Nytt i denne versjonen:
-1. Laget liste over filer som lå feil plass
-2. Disse filene får ikke nytt navn
+1. Genererer rapport som legges i mappen 00 FDV MainManager
+2. Rapporten åpnes automatisk når skriptet er ferdig.
  
 <----------------------------------------------------------------------->
 '
@@ -277,25 +277,44 @@ function removeEmptyFolders {
     }
 }
 $countRemovedFolders = removeEmptyFolders
- 
-'
-<-------------------------------- STATUS -------------------------------->
-'
-Write-Host ('Files moved: ' + $countMovedTot)
-Write-Host ('Files not moved: ' + $countNotMovedTot)
-Write-Host ('Empty folders deleted: ' + $countRemovedFolders)
-Write-Host ('Total files renamed: ' + $counterRenamed)
-Write-Host ('Total files not renamed: ' + $counterNotRenamed)
 
-""
-$rapport = Get-ChildItem -Path $path | Where-Object {!$_.PSIsContainer}
-$filesInTheWrongPlace = $rapport.count
-Write-Host $filesInTheWrongPlace " filer lå utenfor 2- og 3-siffer FDV-mappe:"
-""
-$fileNumber = 0
-foreach ($file in $rapport) {
-    $fileNumber++
-    write-host $fileNumber ' ' $file
+#inputs til rapport
+$header = "------------------------------- STATUS --------------------------------"
+$flyttet = "   Filer flyttet: " + $countMovedTot.ToString()
+$ikkeFlyttet = "   Filer ikke flyttet: " + $countNotMovedTot.ToString()
+$mapperSlettet ="   Tomme mapper slettet: " + $countRemovedFolders.ToString()
+$omdopt = "   Filer omdøpt: " + $counterRenamed.ToString()
+$ikkeOmdopt = "   Filer ikke omdøpt: " + $counterNotRenamed.ToString()
+$footer = "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+$filesInTheWrongPlace = (Get-ChildItem -Path $path | where-Object {!$_.PSIsContainer}).Count
+$underOverskrift = "   " + $filesInTheWrongPlace.ToString() + " filer lå utenfor 2- og 3-siffer FDV-mappe: "
+
+function composeFileList {
+    $fileNumber = 0
+    $list = @()
+    foreach ($file in Get-ChildItem -Path $path -File) {
+        $fileNumber++
+        $list += "   " +$fileNumber.tostring() + " " + $file.Name
+    }
+    return $list
 }
-'
-<------------------------------------------------------------------------>'
+$fileList = composeFileList
+
+#Lag rapport
+$rapport = $oldPath + '\00 FDV MainManager - rapport.txt'
+("") | Out-File -FilePath $rapport
+
+function addToReport {
+    param ( $InputObject)
+    $InputObject | Out-File $rapport -append
+}
+
+addToReport ($header, "", $flyttet, $ikkeFlyttet, $mapperSlettet, $omdopt, $ikkeOmdopt,"",$footer,"", $underOverskrift,"")
+addToReport $fileList
+addToReport ("", $footer, "")
+
+Get-Content -Path $rapport
+
+. $rapport
+
+Get-ChildItem -Path $path
