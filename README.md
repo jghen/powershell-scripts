@@ -1,15 +1,19 @@
-# powershell-scripts
-powershell script for altering filenames
+# Powershell script for FDV
+powershell script for å endre filnavn og opprydding i FDV
 
-1. Prompts for path 
-2. Counts files to be moved 
-3. Moves files up one folder if parent dir starts with 2 numbers -Force is used to avoid duplicates.
-4. Repeats (3.) until all files are moved to correct folder.
-5. Renames all files.
-6. Searches for, and deletes empty folders.
-7. Displays status - files moved, filenames altered, folders deleted.
+# Hvordan bruke det
+Åpne powershell (trykk windows-knapp og skriv powershell, trykk enter)
+Lim inn scriptet i powershell trykk enter. \
+Følg instruksjonene \
 
-# How to use
-paste it into powershell and press enter. \
-Or, you can make it into a desktop app: \
-See [Powershell Gallery](https://www.powershellgallery.com/packages/ps2exe/1.0.10) for info on how to convert .ps1 files to .exe
+# Hva gjør scriptet?
+1. Spør etter sti
+2. Lager en ny mappe (00 FDV MainManager) og kopierer alt dit. 
+3. Scriptet kjøres deretter på den nye mappen. Originalfilene blir bevart som de er.
+4. Scriptet endrer mapper som starter på 80 til 17 branndokumentasjon
+5. Pakker ut zip-filer.
+6. Flytter filer hvis det ikke ligger i 2- eller 3-siffer FDV-mappe.
+7. Gjentar (4.) til alle filene er flyttet til riktig mappe. Filer som ligger utenfor struktur flyttes til øverste nivå.
+8. Endrer til korrekt navn på alle filer (yyyy_bb Filnavn).
+9. Sletter tomme overflødige mapper.
+10. Genererer rapport og åpner den nye mappen med FDV.
