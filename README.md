@@ -7,7 +7,7 @@ powershell script for å endre filnavn og opprydding i FDV
 3. Følg instruksjonene.
 
 # Hva gjør scriptet?
-1. Spør etter sti
+1. Spør etter sti og byggeår
 2. Lager en ny mappe (00 FDV MainManager) og kopierer alt dit. 
 3. Scriptet kjøres deretter på den nye mappen. Originalfilene blir bevart som de er.
 4. Scriptet endrer mapper som starter på "80 " til 17 branndokumentasjon
