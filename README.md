@@ -2,8 +2,8 @@
 powershell script for å endre filnavn og opprydding i FDV
 
 # Hvordan bruke det
-1. Åpne powershell (trykk windows-knapp og skriv powershell, trykk enter) \
-2. Lim inn scriptet i powershell trykk enter. \
+1. Åpne powershell (trykk windows-knapp og skriv powershell, trykk enter).
+2. Lim inn scriptet i powershell trykk enter.
 3. Følg instruksjonene.
 
 # Hva gjør scriptet?
