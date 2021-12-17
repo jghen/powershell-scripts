@@ -317,4 +317,6 @@ Get-Content -Path $rapport
 
 . $rapport
 
+Invoke-Item -Path $path
+
 Get-ChildItem -Path $path
