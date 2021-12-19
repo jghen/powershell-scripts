@@ -1,11 +1,11 @@
 '<------------------------Endre navn på ny FDV-------------------------->
  
-Versjon: 4.04
-Dato: 16.12.2021
+Versjon: 4.05
+Dato: 19.12.2021
  
 Nytt i denne versjonen:
-1. Genererer rapport som legges i mappen 00 FDV MainManager
-2. Rapporten åpnes automatisk når skriptet er ferdig.
+1. Hindrer dobbeltføring hvis starten av filnavn = FDVmappe 
+2. Fikset feil telling av filer som ikke får nytt navn.
  
 <----------------------------------------------------------------------->
 '
@@ -18,6 +18,7 @@ $year_built = Read-Host 'Skriv inn byggeår [yyyy]: '
 '
 <------------------------- KOPIERER TIL NY MAPPE ------------------------->
 '
+
 #failsafe 1 - lag en ny mappe og kopier alt dit. sett ny path. korrigert for lange tall
 $newMainFolder = "00 FDV MainManager"
 $path = $oldPath + '\' + $newMainFolder
@@ -37,8 +38,9 @@ write-Host ('Copying everything to new path:' + $path)
 #create new main folder
 New-Item -Path $oldPath -Name $newMainFolder -ItemType "directory"
  
-$children = Get-ChildItem -Exclude ('10 Originaldokumentasjon', '11 Revisjoner', '00 FDV MainManager - rapport.txt')
- 
+$children = Get-ChildItem -Exclude ('10 Originaldokumentasjon', '11 Revisjoner', '00 FDV MainManager - StatusRapport.txt')
+
+#tell windows API to disaple string parsing - allows long file names
 $longPath = '\\?\' + $path
  
 foreach ($item in $children) {
@@ -46,7 +48,7 @@ foreach ($item in $children) {
         $itemLong = '\\?\' + $item.FullName
         Write-Host ('Copying item: ' + $item.Name)
         Write-Host ('Copying to: ' + $longPath)
-        $itemLong | Copy-Item -Recurse -Destination $longPath
+        $itemLong | Copy-Item -Force -Recurse -Destination $longPath
     }
 }
  
@@ -57,7 +59,7 @@ Set-Location $longPath
 #failsafe 3 - alle mapper som starter på 80 må starte på 17
 foreach ($folder in (Get-ChildItem -Recurse -Directory)) {
     if ( ($folder.Name.Length -gt 2) -And ($folder.Name.substring(0,3) -eq '80 ') ) {
-        $folder | Rename-Item -NewName "17 Branndokumentasjon"
+        $folder | Rename-Item -NewName "17 Generell FDV og branndokumentasjon"
     }
 }
  
@@ -87,10 +89,10 @@ function parentDirMatchNewMainDir {
 }
 function checkSpaceAtIndex {
     param (
-        $dirName,
+        $String,
         $index
     )
-    if ($dirName.substring($index,1) -eq " ") {
+    if ($String.substring($index,1) -eq " ") {
         return $true
     }else {
         return $false
@@ -183,21 +185,16 @@ while ($true) {
    
     foreach ($file in (Get-ChildItem -Recurse -File)) {
         $destination = $file.Directory.Parent.FullName
-        try {
-            if (ShallFileStayInFolder $file){
-                #stay
-                $countNotMoved++
-            }
-            else {
-                #move file to parent folder
-                $file | Move-Item -Destination $destination -Force
-                Write-Host ('File moved: ' + $file.Name)
-                Write-Host ('Moved to: ' + $destination)
-                $countMoved++
-            }
+        if (ShallFileStayInFolder $file){
+            #stay
+            $countNotMoved++
         }
-        catch {
-            Write-Host ("--> File: " + $file.Name + " - ERROR: " + $_.Exception.message)
+        else {
+            #move file to parent folder
+            $file | Move-Item -Destination $destination -Force
+            Write-Host ('File moved: ' + $file.Name)
+            Write-Host ('Moved to: ' + $destination)
+            $countMoved++
         }
     }
     Write-Host ('Moved: ' + $countMoved)
@@ -220,24 +217,32 @@ foreach ($file in (Get-ChildItem -Recurse -File)) {
     #conditions
     $is2DigitFolder = match2DigitFdvDir $parentFolder
     $is3DigitFolder = match3DigitFdvDir $parentFolder
+    $file2DigitsMatchDir2Digits = ($fileName.Length -ge 2) -And ($fileName.Substring(0,2) -eq $parentFolder.Substring(0,2))
+    $file3DigitsMAtchDir3Digits =($fileName.Length -ge 3) -And ($fileName.Substring(0,3) -eq $parentFolder.Substring(0,3))
+    $fileNameIndex2IsSpace = ($fileName.Length -gt 2) -And (checkSpaceAtIndex $fileName 2)
+    $fileNameIndex3IsSpace = ($fileName.Length -gt 3) -And (checkSpaceAtIndex $fileName 3)
  
-    try {
-        if ($is2DigitFolder) {
-            $file | Rename-Item -NewName { $year_built + ”_” + $parentFolder.substring(0, 2) + ” ” + $fileName }
+    if ($is2DigitFolder) {
+        if ($file2DigitsMatchDir2Digits -And $fileNameIndex2IsSpace) {
+            $file | Rename-Item -NewName {$year_built + ”_” + $fileName}
         }
-        elseif ($is3DigitFolder) {
-            $file | Rename-Item -NewName { $year_built + ”_” + $parentFolder.substring(0, 3) + ” ” + $fileName }
+        else {
+            $file | Rename-Item -NewName {$year_built + ”_” + $parentFolder.substring(0, 2) + ” ” + $fileName}
         }
-        <# else {
-            $file | Rename-Item -NewName { $year_built + “_” + $parentFolder.substring(0, 2) + ” ” + $fileName }
-        } #>
-        Write-Host ("File renamed: " + $file.Name)
-        $counterRenamed++
     }
-    catch {
-        Write-Host ("File not renamed: " + $file.Name + " --- ERROR: " + $_.Exception.message)
+    elseif ($is3DigitFolder) {
+        if ($file3DigitsMAtchDir3Digits -And $fileNameIndex3IsSpace) {
+            $file | Rename-Item -NewName {$year_built + ”_” + $fileName}
+        }
+        else {
+            $file | Rename-Item -NewName {$year_built + ”_” + $parentFolder.substring(0, 3) + ” ” + $fileName}
+        }
+    }
+    else {
         $counterNotRenamed++
     }
+    Write-Host ("File renamed: " + $file.Name)
+    $counterRenamed++
 }
 Write-Host ('Renaming files - completed')
  
@@ -270,7 +275,7 @@ function removeEmptyFolders {
 }
 $countRemovedFolders = removeEmptyFolders
 
-#inputs til rapport
+#inputs til StatusRapport
 $header = "------------------------------- STATUS --------------------------------"
 $flyttet = "   Filer flyttet: " + $countMovedTot.ToString()
 $ikkeFlyttet = "   Filer ikke flyttet: " + $countNotMovedTot.ToString()
@@ -292,22 +297,25 @@ function composeFileList {
 }
 $fileList = composeFileList
 
-#Lag rapport
-$rapport = $oldPath + '\00 FDV MainManager - rapport.txt'
-("") | Out-File -FilePath $rapport
+#Lag StatusRapport
+$StatusRapport = $oldPath + '\00 FDV MainManager - StatusRapport.txt'
+("") | Out-File -FilePath $StatusRapport
 
 function addToReport {
-    param ( $InputObject)
-    $InputObject | Out-File $rapport -append
+    param (
+        $Report,
+        $InputObject
+        )
+    $InputObject | Out-File $Report -Append
 }
 
-addToReport ($header, "", $flyttet, $ikkeFlyttet, $mapperSlettet, $omdopt, $ikkeOmdopt,"",$footer,"", $underOverskrift,"")
-addToReport $fileList
-addToReport ("", $footer, "")
+addToReport $StatusRapport ($header, "", $flyttet, $ikkeFlyttet, $mapperSlettet, $omdopt, $ikkeOmdopt,"",$footer,"", $underOverskrift,"")
+addToReport $StatusRapport $fileList
+addToReport $StatusRapport ("", $footer, "")
 
-Get-Content -Path $rapport
+Get-Content -Path $StatusRapport
 
-. $rapport
+. $StatusRapport
 
 Invoke-Item -Path $path
 
