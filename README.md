@@ -14,6 +14,6 @@ powershell script for å endre filnavn og opprydding i FDV
 5. Pakker ut zip-filer.
 6. Flytter filer hvis det ikke ligger i 2- eller 3-siffer FDV-mappe.
 7. Gjentar (4.) til alle filene er flyttet til riktig mappe. Filer som ligger utenfor struktur flyttes til øverste nivå.
-8. Endrer til korrekt navn på alle filer (yyyy_bb Filnavn).
+8. Endrer til korrekt navn på alle filer (yyyy_bb Filnavn eller yyyy_bbb Filnavn).
 9. Sletter tomme overflødige mapper.
 10. Genererer rapport og åpner den nye mappen med FDV.
