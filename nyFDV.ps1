@@ -276,12 +276,13 @@ function removeEmptyFolders {
 $countRemovedFolders = removeEmptyFolders
 
 #inputs til StatusRapport
+$notRenamed = $counterRenamed - $counterNotRenamed
 $header = "------------------------------- STATUS --------------------------------"
 $flyttet = "   Filer flyttet: " + $countMovedTot.ToString()
 $ikkeFlyttet = "   Filer ikke flyttet: " + $countNotMovedTot.ToString()
 $mapperSlettet ="   Tomme mapper slettet: " + $countRemovedFolders.ToString()
 $omdopt = "   Filer omdøpt: " + $counterRenamed.ToString()
-$ikkeOmdopt = "   Filer ikke omdøpt: " + $counterNotRenamed.ToString()
+$ikkeOmdopt = "   Filer ikke omdøpt: " + $notRenamed.ToString()
 $footer = "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
 $filesInTheWrongPlace = (Get-ChildItem -Path $path | where-Object {!$_.PSIsContainer}).Count
 $underOverskrift = "   " + $filesInTheWrongPlace.ToString() + " filer lå utenfor 2- og 3-siffer FDV-mappe: "
