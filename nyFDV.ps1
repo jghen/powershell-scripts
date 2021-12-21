@@ -1,11 +1,10 @@
 '<------------------------Endre navn på ny FDV-------------------------->
  
-Versjon: 4.05
-Dato: 19.12.2021
+Versjon: 4.06
+Dato: 21.12.2021
  
 Nytt i denne versjonen:
-1. Hindrer dobbeltføring hvis starten av filnavn = FDVmappe 
-2. Fikset feil telling av filer som ikke får nytt navn.
+1. fikser telling omdøpt og ikke. Blir ikke dobbeltført med ikke omdøpt.
  
 <----------------------------------------------------------------------->
 '
