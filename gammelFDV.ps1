@@ -1,11 +1,10 @@
 '<----------------Endre navn på gammel FDV fra u-området----------------->
  
-Versjon: 4.04
+Versjon: 4.05
 Dato: 16.12.2021
  
 Nytt i denne versjonen:
-1. Genererer rapport som legges i mappen 00 FDV MainManager
-2. Rapporten åpnes automatisk når skriptet er ferdig.
+1. riktig telling på filer som er omdøpt og ikke.
  
 <----------------------------------------------------------------------->
 '
@@ -47,7 +46,7 @@ foreach ($item in $children) {
         $itemLong = '\\?\' + $item.FullName
         Write-Host ('Copying item: ' + $item.Name)
         Write-Host ('Copying to: ' + $longPath)
-        $itemLong | Copy-Item -Recurse -Destination $longPath
+        $itemLong | Copy-Item -Force -Recurse -Destination $longPath
     }
 }
  
@@ -58,7 +57,7 @@ Set-Location $longPath
 #failsafe 3 - alle mapper som starter på 80 må starte på 17
 foreach ($folder in (Get-ChildItem -Recurse -Directory)) {
     if ( ($folder.Name.Length -gt 2) -And ($folder.Name.substring(0,3) -eq '80 ') ) {
-        $folder | Rename-Item -NewName "17 Branndokumentasjon"
+        $folder | Rename-Item -NewName "17 Generell FDV og branndokumentasjon"
     }
 }
  
@@ -236,9 +235,9 @@ foreach ($file in (Get-ChildItem -Recurse -File)) {
         elseif ($is3DigitFolder) {
             $file | Rename-Item -NewName { $fileDate + “_” + $parentFolder.substring(0, 3) + ” ” + $fileName }
         }
-        <# else {
-            $file | Rename-Item -NewName { $fileDate + “_” + $parentFolder.substring(0, 2) + ” ” + $fileName }
-        } #>
+        else {
+            $counterNotRenamed++
+        }
         Write-Host ("File renamed: " + $file.Name)
         $counterRenamed++
     }
@@ -279,12 +278,13 @@ function removeEmptyFolders {
 $countRemovedFolders = removeEmptyFolders
 
 #inputs til rapport
+$notRenamed = $counterRenamed - $counterNotRenamed
 $header = "------------------------------- STATUS --------------------------------"
 $flyttet = "   Filer flyttet: " + $countMovedTot.ToString()
 $ikkeFlyttet = "   Filer ikke flyttet: " + $countNotMovedTot.ToString()
 $mapperSlettet ="   Tomme mapper slettet: " + $countRemovedFolders.ToString()
 $omdopt = "   Filer omdøpt: " + $counterRenamed.ToString()
-$ikkeOmdopt = "   Filer ikke omdøpt: " + $counterNotRenamed.ToString()
+$ikkeOmdopt = "   Filer ikke omdøpt: " + $notRenamed.ToString()
 $footer = "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
 $filesInTheWrongPlace = (Get-ChildItem -Path $path | where-Object {!$_.PSIsContainer}).Count
 $underOverskrift = "   " + $filesInTheWrongPlace.ToString() + " filer lå utenfor 2- og 3-siffer FDV-mappe: "
