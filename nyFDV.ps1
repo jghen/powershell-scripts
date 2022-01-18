@@ -1,10 +1,10 @@
 '<------------------------Endre navn på ny FDV-------------------------->
  
 Versjon: 4.06
-Dato: 21.12.2021
+Dato: 18.01.2022
  
 Nytt i denne versjonen:
-1. fikser telling omdøpt og ikke. Blir ikke dobbeltført med ikke omdøpt.
+1. ekskluder mapper 200-210, 300-310 .. etc. Dette er ikke FDV-mapper.
  
 <----------------------------------------------------------------------->
 '
@@ -13,7 +13,7 @@ Nytt i denne versjonen:
 $oldPath = Read-Host 'Lim inn lokasjonen på NY FDV, F. eks [U:\500000\FDV-dokumentasjon\Skoler\00 Lade skole]'
 Set-Location $oldPath
 $year_built = Read-Host 'Skriv inn byggeår [yyyy]: '
- 
+
 '
 <------------------------- KOPIERER TIL NY MAPPE ------------------------->
 '
@@ -39,7 +39,7 @@ New-Item -Path $oldPath -Name $newMainFolder -ItemType "directory"
  
 $children = Get-ChildItem -Exclude ('10 Originaldokumentasjon', '11 Revisjoner', '00 FDV MainManager - StatusRapport.txt')
 
-#tell windows API to disaple string parsing - allows long file names
+#tell windows API to disable string parsing - allows long file names
 $longPath = '\\?\' + $path
  
 foreach ($item in $children) {
@@ -123,6 +123,23 @@ function match2DigitFdvDir{
         return $false
     }
 }
+
+#ekskluder 200-210, 300-310 .. etc.
+function isNotGeneralFolder {
+    param (
+        $FolderDigits
+    )
+    for ($i = 2; $i -lt 8; $i++) {
+        for ($j = 0; $j -lt 11; $j++) {
+            $k = $i*100 + $j
+            if ($FolderDigits -eq $k) {
+                return $false
+            }
+        }
+    }
+    return $true 
+}
+
 function match3DigitFdvDir{
     param (
         $ParentDir
@@ -132,8 +149,9 @@ function match3DigitFdvDir{
     $fourthCharIsSpace = checkSpaceAtIndex $ParentDir 3
     $first3DigitsAreNumbers = stringIsOnlyNumbers $ParentDir.substring(0, 3)
     $matchFdvFolder3Digits = ($ParentDir.substring(0, 3) -gt 210) -And ($ParentDir.substring(0, 3) -lt 790)
+    $isNotGeneralFolder = isNotGeneralFolder $ParentDir.substring(0,3)
  
-    if ($first3DigitsAreNumbers -And $fourthCharIsSpace -And $matchFdvFolder3Digits) {
+    if ($first3DigitsAreNumbers -And $fourthCharIsSpace -And $matchFdvFolder3Digits -And $isNotGeneralFolder) {
         return $true
     }else {
         return $false
@@ -224,24 +242,27 @@ foreach ($file in (Get-ChildItem -Recurse -File)) {
     if ($is2DigitFolder) {
         if ($file2DigitsMatchDir2Digits -And $fileNameIndex2IsSpace) {
             $file | Rename-Item -NewName {$year_built + ”_” + $fileName}
+            $counterRenamed++
         }
         else {
             $file | Rename-Item -NewName {$year_built + ”_” + $parentFolder.substring(0, 2) + ” ” + $fileName}
+            $counterRenamed++
         }
     }
     elseif ($is3DigitFolder) {
         if ($file3DigitsMAtchDir3Digits -And $fileNameIndex3IsSpace) {
             $file | Rename-Item -NewName {$year_built + ”_” + $fileName}
+            $counterRenamed++
         }
         else {
             $file | Rename-Item -NewName {$year_built + ”_” + $parentFolder.substring(0, 3) + ” ” + $fileName}
+            $counterRenamed++
         }
     }
     else {
         $counterNotRenamed++
     }
     Write-Host ("File renamed: " + $file.Name)
-    $counterRenamed++
 }
 Write-Host ('Renaming files - completed')
  
@@ -274,14 +295,22 @@ function removeEmptyFolders {
 }
 $countRemovedFolders = removeEmptyFolders
 
+'
+<----------------------------- ZIP-FILER slettes -------------------------->
+'
+foreach ($zip in (Get-ChildItem -Path $path -Filter *.zip -Recurse)) {
+    Write-Host ("Deleting zip: " + $zip.Name)
+    $zip | Remove-Item
+}
+Write-Host ('zips removed')
+
 #inputs til StatusRapport
-$notRenamed = $counterRenamed - $counterNotRenamed
 $header = "------------------------------- STATUS --------------------------------"
 $flyttet = "   Filer flyttet: " + $countMovedTot.ToString()
 $ikkeFlyttet = "   Filer ikke flyttet: " + $countNotMovedTot.ToString()
 $mapperSlettet ="   Tomme mapper slettet: " + $countRemovedFolders.ToString()
 $omdopt = "   Filer omdøpt: " + $counterRenamed.ToString()
-$ikkeOmdopt = "   Filer ikke omdøpt: " + $notRenamed.ToString()
+$ikkeOmdopt = "   Filer ikke omdøpt: " + $counterNotRenamed.ToString()
 $footer = "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
 $filesInTheWrongPlace = (Get-ChildItem -Path $path | where-Object {!$_.PSIsContainer}).Count
 $underOverskrift = "   " + $filesInTheWrongPlace.ToString() + " filer lå utenfor 2- og 3-siffer FDV-mappe: "
