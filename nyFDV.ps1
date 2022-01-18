@@ -14,7 +14,7 @@ Nytt i denne versjonen:
 $oldPath = Read-Host 'Lim inn lokasjonen på NY FDV, F. eks [U:\500000\FDV-dokumentasjon\Skoler\00 Lade skole]'
 Set-Location $oldPath
 $year_built = Read-Host 'Skriv inn byggeår [yyyy]: '
-$project = Read-Host 'kort Prosjektnavn [trykk Enter hvis ikke]: '
+$project = Read-Host 'Kort prosjektnavn [hvis ikke - trykk Enter]: '
 if ($project.Length -gt 0) {
     $projectName = " " + $project + " - "
 } else {
