@@ -5,6 +5,7 @@ Dato: 18.01.2022
  
 Nytt i denne versjonen:
 1. ekskluder mapper 200-210, 300-310 .. etc. Dette er ikke FDV-mapper.
+2. kan velge å legge inn prosjektnavn i alle filnavn etter yyyy_bb
  
 <----------------------------------------------------------------------->
 '
@@ -13,6 +14,12 @@ Nytt i denne versjonen:
 $oldPath = Read-Host 'Lim inn lokasjonen på NY FDV, F. eks [U:\500000\FDV-dokumentasjon\Skoler\00 Lade skole]'
 Set-Location $oldPath
 $year_built = Read-Host 'Skriv inn byggeår [yyyy]: '
+$project = Read-Host 'kort Prosjektnavn [trykk Enter hvis ikke]: '
+if ($project.Length -gt 0) {
+    $projectName = " " + $project + " - "
+} else {
+    $projectName = $project
+}
 
 '
 <------------------------- KOPIERER TIL NY MAPPE ------------------------->
@@ -241,21 +248,21 @@ foreach ($file in (Get-ChildItem -Recurse -File)) {
  
     if ($is2DigitFolder) {
         if ($file2DigitsMatchDir2Digits -And $fileNameIndex2IsSpace) {
-            $file | Rename-Item -NewName {$year_built + ”_” + $fileName}
+            $file | Rename-Item -NewName {$year_built + ”_” + $projectName + $fileName}
             $counterRenamed++
         }
         else {
-            $file | Rename-Item -NewName {$year_built + ”_” + $parentFolder.substring(0, 2) + ” ” + $fileName}
+            $file | Rename-Item -NewName {$year_built + ”_” + $parentFolder.substring(0, 2) + ” ” + $projectName + $fileName}
             $counterRenamed++
         }
     }
     elseif ($is3DigitFolder) {
         if ($file3DigitsMAtchDir3Digits -And $fileNameIndex3IsSpace) {
-            $file | Rename-Item -NewName {$year_built + ”_” + $fileName}
+            $file | Rename-Item -NewName {$year_built + ”_” + $projectName + $fileName}
             $counterRenamed++
         }
         else {
-            $file | Rename-Item -NewName {$year_built + ”_” + $parentFolder.substring(0, 3) + ” ” + $fileName}
+            $file | Rename-Item -NewName {$year_built + ”_” + $parentFolder.substring(0, 3) + ” ” + $projectName + $fileName}
             $counterRenamed++
         }
     }
