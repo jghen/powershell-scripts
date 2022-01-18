@@ -1,6 +1,6 @@
 '<------------------------Endre navn på ny FDV-------------------------->
  
-Versjon: 4.06
+Versjon: 4.07
 Dato: 18.01.2022
  
 Nytt i denne versjonen:
