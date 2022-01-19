@@ -6,6 +6,7 @@ Dato: 18.01.2022
 Nytt i denne versjonen:
 1. ekskluder mapper 200-210, 300-310 .. etc. Dette er ikke FDV-mapper.
 2. kan velge å legge inn prosjektnavn i alle filnavn etter yyyy_bb
+3. fikset problem med omdøping av 80-mappe
  
 <----------------------------------------------------------------------->
 '
@@ -13,8 +14,9 @@ Nytt i denne versjonen:
 #inputs
 $oldPath = Read-Host 'Lim inn lokasjonen på NY FDV, F. eks [U:\500000\FDV-dokumentasjon\Skoler\00 Lade skole]'
 Set-Location $oldPath
-$year_built = Read-Host 'Skriv inn byggeår [yyyy]: '
-$project = Read-Host 'Kort prosjektnavn [hvis ikke - trykk Enter]: '
+$year_built = Read-Host 'Skriv inn byggeår [yyyy] '
+$project = Read-Host 'Kort prosjektnavn [hvis ikke - trykk Enter] '
+
 if ($project.Length -gt 0) {
     $projectName = " " + $project + " - "
 } else {
@@ -62,10 +64,13 @@ Write-Host ('Copy complete')
  
 Set-Location $longPath
  
-#failsafe 3 - alle mapper som starter på 80 må starte på 17
+#failsafe 3 - alle mapper som starter på 80 må starte på 17 - men ikke hvis de ligger under f. eks 20.
 foreach ($folder in (Get-ChildItem -Recurse -Directory)) {
-    if ( ($folder.Name.Length -gt 2) -And ($folder.Name.substring(0,3) -eq '80 ') ) {
-        $folder | Rename-Item -NewName "17 Generell FDV og branndokumentasjon"
+    if ( ($folder.Name.Length -gt 2) -And ($folder.Name.substring(0,3) -eq '80 ') -And (($folder.Parent.Name -eq $newMainFolder) -Or ($folder.Parent.Parent.Name -eq $newMainFolder)) ) {
+        Write-Host ('1. Renaming folder: ' + $folder.Name)
+        Write-Host ('2. Folder parent ' + $folder.Parent.Name)
+        Write-Host ('3. Folder parent parent: ' + $folder.Parent.Parent.Name)
+        $folder | Rename-Item -Verbose -Force -NewName {"17 - " + $folder.Name}
     }
 }
  
@@ -89,9 +94,8 @@ function parentDirMatchNewMainDir {
     )
     if ($ParentDirName -eq $newMainFolder) {
         return $true
-    }else {
-        return $false
     }
+    return $false
 }
 function checkSpaceAtIndex {
     param (
@@ -100,9 +104,8 @@ function checkSpaceAtIndex {
     )
     if ($String.substring($index,1) -eq " ") {
         return $true
-    }else {
-        return $false
     }
+    return $false
 }
 function stringIsOnlyNumbers {
     param (
@@ -110,9 +113,8 @@ function stringIsOnlyNumbers {
     )
     if ($String -match '^\d+$') {
         return $true
-    }else {
-        return $false
     }
+    return $false
 }
 function match2DigitFdvDir{
     param (
@@ -126,9 +128,8 @@ function match2DigitFdvDir{
  
     if ($first2DigitsAreNumbers -And $thirdCharIsSpace -And $matchFdvFolder2Digits) {
         return $true
-    }else {
-        return $false
     }
+    return $false
 }
 
 #ekskluder 200-210, 300-310 .. etc.
@@ -160,9 +161,8 @@ function match3DigitFdvDir{
  
     if ($first3DigitsAreNumbers -And $fourthCharIsSpace -And $matchFdvFolder3Digits -And $isNotGeneralFolder) {
         return $true
-    }else {
-        return $false
     }
+    return $false
 }
  
 function ShallFileStayInFolder {
