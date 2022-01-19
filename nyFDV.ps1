@@ -67,9 +67,7 @@ Set-Location $longPath
 #failsafe 3 - alle mapper som starter på 80 må starte på 17 - men ikke hvis de ligger under f. eks 20.
 foreach ($folder in (Get-ChildItem -Recurse -Directory)) {
     if ( ($folder.Name.Length -gt 2) -And ($folder.Name.substring(0,3) -eq '80 ') -And (($folder.Parent.Name -eq $newMainFolder) -Or ($folder.Parent.Parent.Name -eq $newMainFolder)) ) {
-        Write-Host ('1. Renaming folder: ' + $folder.Name)
-        Write-Host ('2. Folder parent ' + $folder.Parent.Name)
-        Write-Host ('3. Folder parent parent: ' + $folder.Parent.Parent.Name)
+        Write-Host ('Renaming folder: ' + $folder.Name)
         $folder | Rename-Item -Verbose -Force -NewName {"17 - " + $folder.Name}
     }
 }
