@@ -162,7 +162,7 @@ function match3DigitFdvDir{
     }
     return $false
 }
- 
+
 function ShallFileStayInFolder {
     param (
         $File
@@ -184,7 +184,7 @@ function ShallFileStayInFolder {
         return $false
     }
 }
- 
+
 #count total files to move
 $countMovedTot = 0
 $countNotMovedTot = 0
