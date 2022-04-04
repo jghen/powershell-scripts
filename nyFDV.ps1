@@ -12,7 +12,7 @@ Nytt i denne versjonen:
 '
  
 #inputs
-$oldPath = Read-Host 'Lim inn lokasjonen på NY FDV, F. eks [U:\500000\FDV-dokumentasjon\Skoler\00 Lade skole]'
+$oldPath = Read-Host 'Lim inn stien til FDV-mappen:'
 Set-Location $oldPath
 $year_built = Read-Host 'Skriv inn byggeår [yyyy] '
 $project = Read-Host 'Kort prosjektnavn [hvis ikke - trykk Enter] '
@@ -70,6 +70,10 @@ foreach ($folder in (Get-ChildItem -Recurse -Directory)) {
         Write-Host ('Renaming folder: ' + $folder.Name)
         $folder | Rename-Item -Verbose -Force -NewName {"17 - " + $folder.Name}
     }
+}
+
+foreach ($file in (Get-ChildItem -Filter 'desktop.ini' -Recurse)) {
+    $file | Remove-Item
 }
  
 '
