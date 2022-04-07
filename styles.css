@@ -1,3 +1,7 @@
+:root {
+  --bg-green: rgb(37, 137, 115);
+  --bg-yellow: rgb(209, 170, 29);
+}
 body {
   position: absolute;
   height: 100%;
@@ -7,8 +11,7 @@ body {
   color: #000;
   font-size: 18px;
   font-family: Arial, Helvetica, sans-serif;
-  background-color: rgb(37, 137, 115);
-  
+  background-color: var(--bg-green);
 }
 .text-box, .gif-box {
   display: flex;
@@ -18,7 +21,7 @@ body {
 .text-box{
   width: 35%;
   height: 100%;
-  background-color: rgb(173, 141, 23);
+  background-color: var(--bg-yellow);
   border-bottom-right-radius: 15%;
   /* justify-content: center; */
 }
@@ -37,11 +40,11 @@ body {
 }
 .sprinkle-yellow {
   z-index: -2;
-  background-color: rgb(173, 141, 23); 
+  background-color: var(--bg-yellow); 
 }
 .sprinkle-green {
   z-index: -1;
-  background-color: rgb(37, 137, 115); 
+  background-color: var(--bg-green); 
   border-top-left-radius: 20%;
 }
 section {
@@ -94,15 +97,24 @@ img {
   section {
     width: 60%;
   }
+
+  .text-box, .gif-box {
+    height: 50%;
+  }
+  .sprinkle-yellow, .sprinkle-green {
+    width: 100%;
+    height: 50%;
+    top: 50%;
+  }
   .text-box {
-    border-bottom-right-radius: 5%;
+    border-bottom-right-radius: 10%;
   }
   
   .sprinkle-green {
-    border-top-left-radius: 5%;
+    border-top-left-radius: 10%;
   }
   img {
-    width: 60%;
+    width: 50%;
     border-radius: 10px;
   }
 }
