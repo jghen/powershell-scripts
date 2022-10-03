@@ -1,3 +1,4 @@
+* {box-sizing: border-box;}
 :root {
   --bg-green: rgb(200, 238, 230);
   --bg-yellow: rgb(200, 238, 230);
@@ -22,19 +23,16 @@ body {
 }
 .text-box{
   width: 35%;
-
   background-color: var(--bg-yellow);
   border-bottom-right-radius: 15%;
-  /* justify-content: center; */
 }
 .text-box-inner {
-  padding: 2rem 4rem;
+  padding: 1rem 2rem;
   background-color: var(--bg-text);
-  border-radius: 10px;
+  border-radius: 15px;
 }
 .gif-box {
   width: 65%;
-
 }
 .sprinkle-yellow, .sprinkle-green {
   position: absolute;
@@ -90,7 +88,6 @@ a {
   color: inherit;
 }
 .github {
-  background-color: inherit;
   width: 36px;
   border: none;
   padding-right: .6rem;
