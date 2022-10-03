@@ -5,7 +5,7 @@
   --bg-text: rgb(210, 245, 238);
 }
 body {
-  font-size: 1rem;
+
   position: absolute;
   height: 100%;
   width: 100%;
@@ -25,13 +25,11 @@ body {
 .text-box{
   width: 35%;
   background-color: var(--bg-yellow);
-  border-bottom-right-radius: 15%;
 }
 .text-box-inner {
-  padding: .5rem 2rem;
+  padding: 2rem;
   min-width: 50%;
   background-color: var(--bg-text);
-  border-radius: 15px;
 }
 .gif-box {
   width: 65%;
@@ -96,12 +94,7 @@ a {
     width: 100%;
     height: 60%;
   }
-  .sprinkle-yellow, .sprinkle-green {
-    width: 100%;
-    height: 40%;
-    left: 0;
-    top: 40%;
-  }
+
   section {
     margin: auto auto;
     width: 50%;
@@ -123,11 +116,7 @@ a {
   .text-box, .gif-box {
     height: 50%;
   }
-  .sprinkle-yellow, .sprinkle-green {
-    width: 100%;
-    height: 50%;
-    top: 50%;
-  }
+
   .text-box {
     border-bottom-right-radius: 10%;
   }
@@ -147,11 +136,6 @@ a {
   }
   .text-box, .gif-box {
     height: 50%;
-  }
-  .sprinkle-yellow, .sprinkle-green {
-    width: 100%;
-    height: 50%;
-    top: 50%;
   }
   .gif {
     width: 90%;
