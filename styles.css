@@ -132,7 +132,7 @@ a {
 
 @media only screen and (max-width: 460px){
   section {
-    width: 80%;
+    width: 90%;
   }
   .text-box, .gif-box {
     height: 50%;
