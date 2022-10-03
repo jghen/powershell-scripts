@@ -39,6 +39,15 @@ foreach ($file in Get-ChildItem -recurse -file) {
 
     $file | Rename-Item -NewName {$parentFolder + " " + $fileName}
 }
+
+#lag mapper mapper i hver mappe i get childitem (dvs der du står).
+foreach($folder in (Get-ChildItem -directory)){
+    new-item -ItemType directory -Path ($folder.fullname+"\module1") -verbose
+    new-item -ItemType directory -Path ($folder.fullname+"\module2") -verbose
+    new-item -ItemType directory -Path ($folder.fullname+"\module3") -verbose
+    new-item -ItemType directory -Path ($folder.fullname+"\module4") -verbose
+    new-item -ItemType directory -Path ($folder.fullname+"\course-assignement") -verbose
+}
  
 
 
